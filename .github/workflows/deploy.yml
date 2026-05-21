@@ -34,6 +34,8 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/innovatech-frontend:latest
           build-args: |
             VITE_API_URL=${{ secrets.VITE_API_URL }}
+            VITE_VENTAS_URL=${{ secrets.VITE_VENTAS_URL }}
+            VITE_DESPACHOS_URL=${{ secrets.VITE_DESPACHOS_URL }}
 
   # ─────────────────────────────────────────────
   # JOB 2: Deploy en EC2 pública (espera el build)
@@ -44,9 +46,6 @@ jobs:
     needs: build
 
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
       - name: Deploy via SSH a EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -60,12 +59,7 @@ jobs:
             # Actualizar el código
             git pull origin deploy
 
-            # Crear .env con la URL del backend
-            cat > .env <<EOF
-            VITE_API_URL=${{ secrets.VITE_API_URL }}
-            EOF
-
-            # Levantar el contenedor actualizado
+            # Bajar la imagen actualizada y levantar el contenedor
             docker compose pull
             docker compose up -d --remove-orphans
 
